@@ -1,0 +1,45 @@
+# Common video file extensions
+**/*.mp4
+**/*.flv
+**/*.avi
+**/*.mkv
+**/*.mov
+**/*.wmv
+**/*.mpeg
+**/*.mpg
+**/*.m4v
+**/*.webm
+**/*.vob
+**/*.ogv
+**/*.3gp
+**/*.3g2
+**/*.mts
+**/*.ts
+**/*.m2ts
+
+# Common audio file extensions
+**/*.mp3
+**/*.wav
+**/*.flac
+**/*.aac
+**/*.ogg
+**/*.wma
+**/*.m4a
+**/*.aiff
+**/*.amr
+**/*.alac
+**/*.opus
+**/*.pcm
+**/*.aax
+**/*.ac3
+
+# Playlists and media metadata files
+**/*.m3u
+**/*.m3u8
+**/*.pls
+**/*.cue
+**/*.xspf
+
+# Temporary media files
+**/*.tmp
+**/*.part
