@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FFmpeg Microservice</title>
+    <title>FFmpeg Microservice - Form Data</title>
 </head>
 
 <body>
@@ -14,14 +14,11 @@
             <label for="videoFile">Video File:</label>
             <input type="file" id="videoFile" name="file" accept="video/*" required>
         </div>
-
-        <!-- Text Input for passing the FFmpeg command to the server -->
-        <!-- <div>
+        <div>
             <label for="ffmpegCommand">FFmpeg Command:</label>
             <input type="text" id="ffmpegCommand" name="command"
                 placeholder="e.g., -vf scale=100:50 -c:a copy -c:v libx264 -f flv -" required>
-        </div> -->
-
+        </div>
         <div>
             <button type="submit">Submit</button>
         </div>
