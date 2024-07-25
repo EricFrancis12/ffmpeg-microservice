@@ -5,8 +5,12 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os/exec"
 	"strings"
+
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 const (
@@ -47,4 +51,11 @@ func PrepareCommand(command string, stdin io.ReadCloser, stdout io.Writer, stder
 func FormatCommand(str string) (name string, args []string) {
 	parts := strings.Split(str, " ")
 	return parts[0], parts[1:]
+}
+
+func WithCors(router *mux.Router) http.Handler {
+	return cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(router)
 }

@@ -42,20 +42,22 @@
             })
                 .then(response => {
                     if (response.ok) {
-                        return response.blob();
+                        console.log('Network response was ok.');
+                    } else {
+                        console.error('Network response was not ok.');
                     }
-                    throw new Error('Network response was not ok.');
+                    // return response.blob();
                 })
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = 'output.flv';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                })
+                // .then(blob => {
+                //     const url = window.URL.createObjectURL(blob);
+                //     const a = document.createElement('a');
+                //     a.style.display = 'none';
+                //     a.href = url;
+                //     a.download = 'output.flv';
+                //     document.body.appendChild(a);
+                //     a.click();
+                //     window.URL.revokeObjectURL(url);
+                // })
                 .catch(error => {
                     console.error('There has been a problem with your fetch operation:', error);
                 });

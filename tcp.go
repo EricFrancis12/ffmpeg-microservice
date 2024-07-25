@@ -16,6 +16,7 @@ func handleTCP(conn net.Conn) {
 		log.Printf("Failed to read command: %v", err)
 		return
 	}
+	command = command[:len(command)-1] // Remove the newline character
 
 	ffmpegCmd := PrepareCommand(command, conn, conn, conn)
 
