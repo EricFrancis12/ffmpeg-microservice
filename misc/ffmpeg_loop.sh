@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to keep FFmpeg listener alive
+# Script to keep FFmpeg listener running continuously
 
 $INPUT="http://localhost:8080/live/stream"
 OUTPUT="http://localhost:3003"
