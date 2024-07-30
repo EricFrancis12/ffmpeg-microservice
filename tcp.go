@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+// The "breakpoint" separating the FFmpeg command from the binary data when sent via TCP.
+// [FFmpeg command] + [delim] + [binary data] = [TCP data]
 const delim byte = '\n'
 
 type TCPServer struct {
