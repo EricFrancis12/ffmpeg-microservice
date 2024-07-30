@@ -17,6 +17,9 @@
         <input type="text" id="command" name="command" placeholder="e.g. -vf scale=100:50 -c:a copy -c:v libx264 -f flv"
             required><br><br>
 
+        <label for="octet-stream">Use "application/octet-stream" Accept Header?</label>
+        <input type="checkbox" id="octet-stream" name="octet-stream"><br><br>
+
         <button type="submit">Upload</button>
     </form>
 
@@ -26,19 +29,27 @@
 
             const fileInput = document.getElementById('file');
             const commandInput = document.getElementById('command');
+            const octetStreamInput = document.getElementById('octet-stream');
+
             const file = fileInput.files[0];
             const command = commandInput.value;
 
             const formData = new FormData();
             formData.append('file', file);
 
+            const headers = {
+                'X-FFmpeg-Command': command,
+                'Content-Type': file.type,
+            };
+            console.log(octetStreamInput.checked);
+            if (octetStreamInput.checked === true) {
+                headers['Accept'] = 'application/octet-stream';
+            }
+
             fetch('/http', {
                 method: 'POST',
                 body: file,
-                headers: {
-                    'X-FFmpeg-Command': command,
-                    'Content-Type': file.type
-                }
+                headers,
             })
                 .then(response => {
                     if (response.ok) {
@@ -46,18 +57,18 @@
                     } else {
                         console.error('Network response was not ok.');
                     }
-                    // return response.blob();
+                    return response.blob();
                 })
-                // .then(blob => {
-                //     const url = window.URL.createObjectURL(blob);
-                //     const a = document.createElement('a');
-                //     a.style.display = 'none';
-                //     a.href = url;
-                //     a.download = 'output.flv';
-                //     document.body.appendChild(a);
-                //     a.click();
-                //     window.URL.revokeObjectURL(url);
-                // })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'output.flv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
                 .catch(error => {
                     console.error('There has been a problem with your fetch operation:', error);
                 });

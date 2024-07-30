@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -38,7 +40,13 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ffmpegCmd := PrepareCommand(command, r.Body, w, w)
+	var stdout io.Writer = os.Stderr
+	accept := r.Header.Get("Accept")
+	if accept == "application/octet-stream" {
+		stdout = w
+	}
+
+	ffmpegCmd := PrepareCmd(command, r.Body, stdout, os.Stderr)
 
 	// Run FFmpeg command
 	if err := ffmpegCmd.Run(); err != nil {

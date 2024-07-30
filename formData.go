@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 )
 
 // HandleFormData handles multipart/form-data requests.
@@ -28,7 +29,7 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	ffmpegCmd := PrepareCommand(command, file, w, w)
+	ffmpegCmd := PrepareCmd(command, file, w, os.Stderr)
 
 	// Run FFmpeg command
 	if err := ffmpegCmd.Run(); err != nil {

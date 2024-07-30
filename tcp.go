@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"net"
+	"os"
 )
 
 // HandleTCP handles TCP connections.
@@ -18,7 +19,7 @@ func handleTCP(conn net.Conn) {
 	}
 	command = command[:len(command)-1] // Remove the newline character
 
-	ffmpegCmd := PrepareCommand(command, conn, conn, conn)
+	ffmpegCmd := PrepareCmd(command, conn, conn, os.Stderr)
 
 	// Run FFmpeg command
 	if err := ffmpegCmd.Run(); err != nil {
@@ -26,7 +27,6 @@ func handleTCP(conn net.Conn) {
 	}
 }
 
-// Custom listener to differentiate between TCP and HTTP connections.
 func customListener(listener net.Listener) {
 	for {
 		conn, err := listener.Accept()

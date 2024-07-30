@@ -38,17 +38,17 @@ func main() {
 	customListener(listener)
 }
 
-func PrepareCommand(command string, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer) *exec.Cmd {
-	command = strings.TrimSpace(command)
-	name, args := FormatCommand(command)
-	ffmpegCmd := exec.Command(name, args...)
-	ffmpegCmd.Stdin = stdin
-	ffmpegCmd.Stdout = stdout
-	ffmpegCmd.Stderr = stderr
-	return ffmpegCmd
+func PrepareCmd(cmdStr string, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer) *exec.Cmd {
+	cmdStr = strings.TrimSpace(cmdStr)
+	name, args := FormatCmd(cmdStr)
+	cmd := exec.Command(name, args...)
+	cmd.Stdin = stdin
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+	return cmd
 }
 
-func FormatCommand(str string) (name string, args []string) {
+func FormatCmd(str string) (name string, args []string) {
 	parts := strings.Split(str, " ")
 	return parts[0], parts[1:]
 }
