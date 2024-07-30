@@ -43,5 +43,3 @@
 # Temporary media files
 **/*.tmp
 **/*.part
-
-notes.txt
