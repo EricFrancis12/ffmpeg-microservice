@@ -21,6 +21,6 @@ const (
 )
 
 const (
-	FormDataKeyCommand = "command"
-	FormDataKeyFile    = "file"
+	FormDataKeyCommand        = "command"
+	FormDataKeyFile    string = "file"
 )
