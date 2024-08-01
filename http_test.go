@@ -35,27 +35,32 @@ func TestHandleHTTP(t *testing.T) {
 	t.Run("Write to file system", func(t *testing.T) {
 		outputPath := "./tmp/output-A.flv"
 		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", width, height, outputPath)
+
 		req.Header.Set(HTTPHeaderCommand, command)
 
 		resp, err := client.Do(req)
 		assert.Nil(t, err)
-		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		defer resp.Body.Close()
 
 		resolution, err := GetVideoResolution(outputPath)
 		assert.Nil(t, err)
-		assert.Equal(t, resolution.Height, height)
-		assert.Equal(t, resolution.Width, width)
+		assert.Equal(t, height, resolution.Height)
+		assert.Equal(t, width, resolution.Width)
+
+		assert.Nil(t, os.Remove(outputPath))
 	})
 
 	t.Run("Pipe response back to client", func(t *testing.T) {
 		outputPath := "./tmp/output-B.flv"
 		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv pipe:1", width, height)
+
 		req.Header.Set(HTTPHeaderCommand, command)
+		req.Header.Set(HTTPHeaderAccept, ContentTypeApplicationOctetStream)
 
 		resp, err := client.Do(req)
 		assert.Nil(t, err)
-		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		defer resp.Body.Close()
 
 		file, err := os.Create(outputPath)
@@ -67,7 +72,9 @@ func TestHandleHTTP(t *testing.T) {
 
 		resolution, err := GetVideoResolution(outputPath)
 		assert.Nil(t, err)
-		assert.Equal(t, resolution.Height, height)
-		assert.Equal(t, resolution.Width, width)
+		assert.Equal(t, height, resolution.Height)
+		assert.Equal(t, width, resolution.Width)
+
+		assert.Nil(t, os.Remove(outputPath))
 	})
 }
