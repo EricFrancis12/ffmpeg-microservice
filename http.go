@@ -42,7 +42,7 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 	// Read the FFmpeg command from the request header
 	command := r.Header.Get(HTTPHeaderCommand)
 	if command == "" {
-		http.Error(w, "Missing FFmpeg command", http.StatusBadRequest)
+		http.Error(w, "Missing command", http.StatusBadRequest)
 		return
 	}
 
@@ -56,7 +56,7 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Run FFmpeg command
 	if err := ffmpegCmd.Run(); err != nil {
-		http.Error(w, fmt.Sprintf("FFmpeg command failed: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("command failed: %v", err), http.StatusInternalServerError)
 	}
 }
 
@@ -70,7 +70,7 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 	// Get the FFmpeg command from the form data
 	command := r.FormValue(FormDataKeyCommand)
 	if command == "" {
-		http.Error(w, "Missing FFmpeg command", http.StatusBadRequest)
+		http.Error(w, "Missing command", http.StatusBadRequest)
 		return
 	}
 
@@ -86,7 +86,7 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 
 	// Run FFmpeg command
 	if err := ffmpegCmd.Run(); err != nil {
-		http.Error(w, fmt.Sprintf("FFmpeg command failed: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("command failed: %v", err), http.StatusInternalServerError)
 	}
 }
 
