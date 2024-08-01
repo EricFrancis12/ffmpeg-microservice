@@ -40,7 +40,7 @@ func handlePost(w http.ResponseWriter, r *http.Request) {
 
 func handleHTTP(w http.ResponseWriter, r *http.Request) {
 	// Read the FFmpeg command from the request header
-	command := r.Header.Get(HTTPHeaderFFmpegCommand)
+	command := r.Header.Get(HTTPHeaderCommand)
 	if command == "" {
 		http.Error(w, "Missing FFmpeg command", http.StatusBadRequest)
 		return
