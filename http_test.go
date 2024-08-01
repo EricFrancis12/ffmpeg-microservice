@@ -35,7 +35,7 @@ func TestHandleHTTP(t *testing.T) {
 	t.Run("Write to file system", func(t *testing.T) {
 		outputPath := "./tmp/output-A.flv"
 		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", width, height, outputPath)
-		req.Header.Set("X-FFmpeg-Command", command)
+		req.Header.Set(HTTPHeaderCommand, command)
 
 		resp, err := client.Do(req)
 		assert.Nil(t, err)
@@ -51,7 +51,7 @@ func TestHandleHTTP(t *testing.T) {
 	t.Run("Pipe response back to client", func(t *testing.T) {
 		outputPath := "./tmp/output-B.flv"
 		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv pipe:1", width, height)
-		req.Header.Set("X-FFmpeg-Command", command)
+		req.Header.Set(HTTPHeaderCommand, command)
 
 		resp, err := client.Do(req)
 		assert.Nil(t, err)

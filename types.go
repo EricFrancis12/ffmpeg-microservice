@@ -15,9 +15,9 @@ const ContentTypeApplicationOctetStream = "application/octet-stream"
 const URLQueryParamFormData = "form-data"
 
 const (
-	HTTPHeaderAccept        = "Accept"
-	HTTPHeaderContentType   = "Content-Type"
-	HTTPHeaderFFmpegCommand = "X-FFmpeg-Command"
+	HTTPHeaderAccept      = "Accept"
+	HTTPHeaderContentType = "Content-Type"
+	HTTPHeaderCommand     = "X-Command"
 )
 
 const (

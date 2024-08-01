@@ -38,7 +38,7 @@
             formData.append('file', file);
 
             const headers = {
-                'X-FFmpeg-Command': command,
+                'X-Command': command,
                 'Content-Type': file.type,
             };
             if (octetStreamInput.checked === true) {
