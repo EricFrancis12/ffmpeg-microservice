@@ -18,11 +18,12 @@ const (
 	targetHeight = 50
 	targetWidth  = 100
 	inputPath    = "./video.mp4"
+	tmpDir       = "./tmp"
 )
 
 func TestHandleHTTP(t *testing.T) {
-	err := MakeDirIfNotExists("./tmp", os.ModePerm)
-	assert.Nil(t, err)
+	assert.Nil(t, MakeDirIfNotExists(tmpDir, os.ModePerm))
+	assert.Nil(t, clearDir(tmpDir))
 
 	inputFile, err := os.ReadFile(inputPath)
 	assert.Nil(t, err)
@@ -36,7 +37,7 @@ func TestHandleHTTP(t *testing.T) {
 	client := &http.Client{}
 
 	t.Run("Write to file system", func(t *testing.T) {
-		outputPath := "./tmp/output-A.flv"
+		outputPath := fmt.Sprintf("%s/output-A.flv", tmpDir)
 		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
 
 		req.Header.Set(HTTPHeaderCommand, command)
@@ -55,7 +56,7 @@ func TestHandleHTTP(t *testing.T) {
 	})
 
 	t.Run("Pipe response back to client", func(t *testing.T) {
-		outputPath := "./tmp/output-B.flv"
+		outputPath := fmt.Sprintf("%s/output-B.flv", tmpDir)
 		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv pipe:1", targetWidth, targetHeight)
 
 		req.Header.Set(HTTPHeaderCommand, command)
@@ -80,20 +81,39 @@ func TestHandleHTTP(t *testing.T) {
 
 		assert.Nil(t, os.Remove(outputPath))
 	})
+
+	t.Run("Modify a local file", func(t *testing.T) {
+		outputPath := fmt.Sprintf("%s/output-C.flv", tmpDir)
+		command := fmt.Sprintf("ffmpeg -i %s -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", inputPath, targetWidth, targetHeight, outputPath)
+
+		req, err := http.NewRequest("POST", server.URL, nil)
+		assert.Nil(t, err)
+
+		req.Header.Set(HTTPHeaderCommand, command)
+
+		resp, err := client.Do(req)
+		assert.Nil(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		defer resp.Body.Close()
+
+		resolution, err := GetVideoResolution(outputPath)
+		assert.Nil(t, err)
+		assert.Equal(t, targetHeight, resolution.Height)
+		assert.Equal(t, targetWidth, resolution.Width)
+
+		assert.Nil(t, os.Remove(outputPath))
+	})
 }
 
 func TestHandleFormData(t *testing.T) {
-	err := MakeDirIfNotExists("./tmp", os.ModePerm)
-	assert.Nil(t, err)
-
-	assert.Nil(t, err)
+	assert.Nil(t, MakeDirIfNotExists(tmpDir, os.ModePerm))
+	assert.Nil(t, clearDir(tmpDir))
 
 	server := httptest.NewServer(http.HandlerFunc(handleFormData))
-	assert.Nil(t, err)
 
 	client := &http.Client{}
 
-	outputPath := "./tmp/output-C.flv"
+	outputPath := fmt.Sprintf("%s/output-D.flv", tmpDir)
 	command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
 
 	file, err := os.Open("./video.mp4")

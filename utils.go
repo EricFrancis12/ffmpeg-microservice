@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -93,4 +94,30 @@ func ParseResolution(jsonStr string) (Resolution, error) {
 	}
 
 	return ffprobeResult.Streams[0], nil
+}
+
+func clearDir(dirPath string) error {
+	fi, err := os.Stat(dirPath)
+	if err != nil {
+		return err
+	}
+
+	if !fi.IsDir() {
+		return fmt.Errorf("dirPath is not a directory")
+	}
+
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		entryPath := filepath.Join(dirPath, entry.Name())
+		if entry.IsDir() {
+			return clearDir(entryPath)
+		}
+		return os.Remove(entryPath)
+	}
+
+	return nil
 }
