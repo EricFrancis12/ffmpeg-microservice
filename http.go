@@ -52,10 +52,10 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 		stdout = w
 	}
 
-	ffmpegCmd := PrepareCmd(command, r.Body, stdout, os.Stderr)
+	cmd := PrepareCmd(command, r.Body, stdout, os.Stderr)
 
 	// Run FFmpeg command
-	if err := ffmpegCmd.Run(); err != nil {
+	if err := cmd.Run(); err != nil {
 		http.Error(w, fmt.Sprintf("command failed: %v", err), http.StatusInternalServerError)
 	}
 }
@@ -82,10 +82,10 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	ffmpegCmd := PrepareCmd(command, file, w, os.Stderr)
+	cmd := PrepareCmd(command, file, w, os.Stderr)
 
 	// Run FFmpeg command
-	if err := ffmpegCmd.Run(); err != nil {
+	if err := cmd.Run(); err != nil {
 		http.Error(w, fmt.Sprintf("command failed: %v", err), http.StatusInternalServerError)
 	}
 }

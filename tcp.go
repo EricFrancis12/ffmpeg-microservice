@@ -60,10 +60,10 @@ func handleTCP(conn net.Conn) {
 	}
 	command = command[:len(command)-1] // Remove the newline character
 
-	ffmpegCmd := PrepareCmd(command, conn, conn, os.Stderr)
+	cmd := PrepareCmd(command, conn, conn, os.Stderr)
 
 	// Run FFmpeg command
-	if err := ffmpegCmd.Run(); err != nil {
-		log.Printf("FFmpeg command failed: %v", err)
+	if err := cmd.Run(); err != nil {
+		log.Printf("command failed: %v", err)
 	}
 }

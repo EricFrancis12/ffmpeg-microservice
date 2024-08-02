@@ -119,7 +119,7 @@ func TestHandleFormData(t *testing.T) {
 	file, err := os.Open("./video.mkv")
 	assert.Nil(t, err)
 
-	//prepare the reader instances to encode
+	// Prepare the reader instances to encode
 	values := map[string]io.Reader{}
 	values[FormDataKeyFile] = file
 	values[FormDataKeyCommand] = strings.NewReader(command)
@@ -161,7 +161,7 @@ func uploadFormData(client *http.Client, url string, values map[string]io.Reader
 	if err != nil {
 		return
 	}
-	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set(HTTPHeaderContentType, w.FormDataContentType())
 
 	res, err := client.Do(req)
 	if err != nil {
