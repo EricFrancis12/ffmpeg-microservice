@@ -21,34 +21,6 @@ func ParseJSON[T any](jsonStr string) (T, error) {
 	return v, nil
 }
 
-func DirExists(dirPath string) (bool, error) {
-	info, err := os.Stat(dirPath)
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	return info.IsDir(), nil
-}
-
-func MakeDirIfNotExists(dirPath string, perm os.FileMode) error {
-	dirExists, err := DirExists(dirPath)
-	if err != nil {
-		return err
-	}
-
-	if dirExists {
-		return nil
-	}
-
-	if err := os.Mkdir(dirPath, perm); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func PrepareCmd(command string, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer) *exec.Cmd {
 	command = strings.TrimSpace(command)
 	name, args := FormatCommand(command)
@@ -94,6 +66,34 @@ func ParseResolution(jsonStr string) (Resolution, error) {
 	}
 
 	return ffprobeResult.Streams[0], nil
+}
+
+func dirExists(dirPath string) (bool, error) {
+	info, err := os.Stat(dirPath)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return info.IsDir(), nil
+}
+
+func makeDirIfNotExists(dirPath string, perm os.FileMode) error {
+	dirExists, err := dirExists(dirPath)
+	if err != nil {
+		return err
+	}
+
+	if dirExists {
+		return nil
+	}
+
+	if err := os.Mkdir(dirPath, perm); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func clearDir(dirPath string) error {

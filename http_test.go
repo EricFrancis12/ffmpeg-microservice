@@ -14,27 +14,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	targetHeight = 50
-	targetWidth  = 100
-	inputPath    = "./video.mkv"
-	tmpDir       = "./tmp"
-)
+func prepareHttpTest(t *testing.T, handler http.Handler, tmpDir string) (*httptest.Server, *http.Client) {
+	assert.Nil(t, makeDirIfNotExists(tmpDir, os.ModePerm))
+	assert.Nil(t, clearDir(tmpDir))
+
+	server := httptest.NewServer(handler)
+	client := &http.Client{}
+	return server, client
+}
 
 func TestHandleHTTP(t *testing.T) {
-	assert.Nil(t, MakeDirIfNotExists(tmpDir, os.ModePerm))
-	assert.Nil(t, clearDir(tmpDir))
+	var (
+		targetHeight = 50
+		targetWidth  = 100
+		inputPath    = "./video.mkv"
+		tmpDir       = "./tmp"
+	)
+
+	server, client := prepareHttpTest(t, http.HandlerFunc(handleHTTP), tmpDir)
 
 	inputFile, err := os.ReadFile(inputPath)
 	assert.Nil(t, err)
 
-	server := httptest.NewServer(http.HandlerFunc(handleHTTP))
 	req, err := http.NewRequest("POST", server.URL, bytes.NewReader(inputFile))
 	assert.Nil(t, err)
 
 	req.Header.Set("Content-Type", "video/mkv")
-
-	client := &http.Client{}
 
 	t.Run("Write to file system", func(t *testing.T) {
 		outputPath := fmt.Sprintf("%s/output-A.flv", tmpDir)
@@ -47,10 +52,7 @@ func TestHandleHTTP(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		defer resp.Body.Close()
 
-		resolution, err := GetVideoResolution(outputPath)
-		assert.Nil(t, err)
-		assert.Equal(t, targetHeight, resolution.Height)
-		assert.Equal(t, targetWidth, resolution.Width)
+		checkResolution(t, outputPath, targetHeight, targetWidth)
 
 		assert.Nil(t, os.Remove(outputPath))
 	})
@@ -74,10 +76,7 @@ func TestHandleHTTP(t *testing.T) {
 		assert.Nil(t, err)
 		file.Close()
 
-		resolution, err := GetVideoResolution(outputPath)
-		assert.Nil(t, err)
-		assert.Equal(t, targetHeight, resolution.Height)
-		assert.Equal(t, targetWidth, resolution.Width)
+		checkResolution(t, outputPath, targetHeight, targetWidth)
 
 		assert.Nil(t, os.Remove(outputPath))
 	})
@@ -96,81 +95,83 @@ func TestHandleHTTP(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		defer resp.Body.Close()
 
-		resolution, err := GetVideoResolution(outputPath)
-		assert.Nil(t, err)
-		assert.Equal(t, targetHeight, resolution.Height)
-		assert.Equal(t, targetWidth, resolution.Width)
+		checkResolution(t, outputPath, targetHeight, targetWidth)
 
 		assert.Nil(t, os.Remove(outputPath))
 	})
 }
 
+type FormDataMap = map[string]io.Reader
+
 func TestHandleFormData(t *testing.T) {
-	assert.Nil(t, MakeDirIfNotExists(tmpDir, os.ModePerm))
-	assert.Nil(t, clearDir(tmpDir))
+	var (
+		targetHeight = 50
+		targetWidth  = 100
+		inputPath    = "./video.mkv"
+		tmpDir       = "./tmp"
+	)
 
-	server := httptest.NewServer(http.HandlerFunc(handleFormData))
+	server, client := prepareHttpTest(t, http.HandlerFunc(handleFormData), tmpDir)
 
-	client := &http.Client{}
+	t.Run("Write to file system", func(t *testing.T) {
+		outputPath := fmt.Sprintf("%s/output-D.flv", tmpDir)
+		command := fmt.Sprintf("ffmpeg -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
 
-	outputPath := fmt.Sprintf("%s/output-D.flv", tmpDir)
-	command := fmt.Sprintf("ffmpeg -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
+		file, err := os.Open(inputPath)
+		assert.Nil(t, err)
 
-	file, err := os.Open("./video.mkv")
-	assert.Nil(t, err)
+		// Prepare the reader instances to encode
+		fdm := make(FormDataMap)
+		fdm[FormDataKeyFile] = file
+		fdm[FormDataKeyCommand] = strings.NewReader(command)
 
-	// Prepare the reader instances to encode
-	values := map[string]io.Reader{}
-	values[FormDataKeyFile] = file
-	values[FormDataKeyCommand] = strings.NewReader(command)
+		uploadFormData(t, client, server.URL, fdm)
 
-	assert.Nil(t, uploadFormData(client, server.URL, values))
+		checkResolution(t, outputPath, targetHeight, targetWidth)
 
-	assert.Nil(t, os.Remove(outputPath))
+		assert.Nil(t, os.Remove(outputPath))
+	})
 }
 
-func uploadFormData(client *http.Client, url string, values map[string]io.Reader) (err error) {
+func checkResolution(t *testing.T, filePath string, height int, width int) {
+	resolution, err := GetVideoResolution(filePath)
+	assert.Nil(t, err)
+	assert.Equal(t, height, resolution.Height)
+	assert.Equal(t, width, resolution.Width)
+}
+
+func uploadFormData(t *testing.T, client *http.Client, url string, fdm FormDataMap) {
 	// Prepare a form that will be submitted to the url
 	var b bytes.Buffer
 
-	w := multipart.NewWriter(&b)
-	for key, r := range values {
-		var fw io.Writer
-		if x, ok := r.(io.Closer); ok {
-			defer x.Close()
+	mpw := multipart.NewWriter(&b)
+	for key, rdr := range fdm {
+		var wrtr io.Writer
+		if clsr, ok := rdr.(io.Closer); ok {
+			defer clsr.Close()
 		}
 		// Add the video file
-		if x, ok := r.(*os.File); ok {
-			if fw, err = w.CreateFormFile(key, x.Name()); err != nil {
-				return
-			}
+		if file, ok := rdr.(*os.File); ok {
+			w, err := mpw.CreateFormFile(key, file.Name())
+			assert.Nil(t, err)
+			wrtr = w
 		} else {
 			// Add other fields
-			if fw, err = w.CreateFormField(key); err != nil {
-				return
-			}
+			w, err := mpw.CreateFormField(key)
+			assert.Nil(t, err)
+			wrtr = w
 		}
-		if _, err = io.Copy(fw, r); err != nil {
-			return err
-		}
-
+		_, err := io.Copy(wrtr, rdr)
+		assert.Nil(t, err)
 	}
-	w.Close()
+	mpw.Close()
 
 	req, err := http.NewRequest("POST", url, &b)
-	if err != nil {
-		return
-	}
-	req.Header.Set(HTTPHeaderContentType, w.FormDataContentType())
+	assert.Nil(t, err)
+
+	req.Header.Set(HTTPHeaderContentType, mpw.FormDataContentType())
 
 	res, err := client.Do(req)
-	if err != nil {
-		return
-	}
-
-	if res.StatusCode != http.StatusOK {
-		err = fmt.Errorf("bad status: %s", res.Status)
-	}
-
-	return
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
