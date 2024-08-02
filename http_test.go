@@ -17,7 +17,7 @@ import (
 const (
 	targetHeight = 50
 	targetWidth  = 100
-	inputPath    = "./video.mp4"
+	inputPath    = "./video.mkv"
 	tmpDir       = "./tmp"
 )
 
@@ -32,13 +32,13 @@ func TestHandleHTTP(t *testing.T) {
 	req, err := http.NewRequest("POST", server.URL, bytes.NewReader(inputFile))
 	assert.Nil(t, err)
 
-	req.Header.Set("Content-Type", "video/mp4")
+	req.Header.Set("Content-Type", "video/mkv")
 
 	client := &http.Client{}
 
 	t.Run("Write to file system", func(t *testing.T) {
 		outputPath := fmt.Sprintf("%s/output-A.flv", tmpDir)
-		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
+		command := fmt.Sprintf("ffmpeg -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
 
 		req.Header.Set(HTTPHeaderCommand, command)
 
@@ -57,7 +57,7 @@ func TestHandleHTTP(t *testing.T) {
 
 	t.Run("Pipe response back to client", func(t *testing.T) {
 		outputPath := fmt.Sprintf("%s/output-B.flv", tmpDir)
-		command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv pipe:1", targetWidth, targetHeight)
+		command := fmt.Sprintf("ffmpeg -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv pipe:1", targetWidth, targetHeight)
 
 		req.Header.Set(HTTPHeaderCommand, command)
 		req.Header.Set(HTTPHeaderAccept, ContentTypeApplicationOctetStream)
@@ -114,9 +114,9 @@ func TestHandleFormData(t *testing.T) {
 	client := &http.Client{}
 
 	outputPath := fmt.Sprintf("%s/output-D.flv", tmpDir)
-	command := fmt.Sprintf("ffmpeg -f mp4 -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
+	command := fmt.Sprintf("ffmpeg -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", targetWidth, targetHeight, outputPath)
 
-	file, err := os.Open("./video.mp4")
+	file, err := os.Open("./video.mkv")
 	assert.Nil(t, err)
 
 	//prepare the reader instances to encode

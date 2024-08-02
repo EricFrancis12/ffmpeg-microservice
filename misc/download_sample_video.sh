@@ -2,8 +2,8 @@
 
 # Downloads a sample video for use in the testing suite.
 
-VIDEO_URL="https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"
-OUTPUT_FILE="video.mp4"
+VIDEO_URL="https://sample-videos.com/video321/mkv/720/big_buck_bunny_720p_1mb.mkv"
+OUTPUT_FILE="video.mkv"
 
 curl -o "$OUTPUT_FILE" "$VIDEO_URL"
 
