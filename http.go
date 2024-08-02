@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 type HTTPServer struct {
@@ -25,9 +24,7 @@ func (hs *HTTPServer) Run() error {
 
 	router.HandleFunc("/", handlePost).Methods("POST")
 
-	router.PathPrefix("/public").Handler(http.StripPrefix("/public", http.FileServer(http.Dir("./public"))))
-
-	return http.ListenAndServe(hs.ListenAddr, WithCors(router))
+	return http.ListenAndServe(hs.ListenAddr, router)
 }
 
 func handlePost(w http.ResponseWriter, r *http.Request) {
@@ -39,14 +36,15 @@ func handlePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHTTP(w http.ResponseWriter, r *http.Request) {
-	// Read the FFmpeg command from the request header
+	// Read the command from the request header
 	command := r.Header.Get(HTTPHeaderCommand)
 	if command == "" {
 		http.Error(w, "Missing command", http.StatusBadRequest)
 		return
 	}
 
-	// Check if client is requesting the output to be streamed back as the response
+	// Check if client is requesting the output to be streamed back as the response.
+	// If so, the stdout of the cmd is set to w
 	var stdout io.Writer = os.Stderr
 	if r.Header.Get(HTTPHeaderAccept) == ContentTypeApplicationOctetStream {
 		stdout = w
@@ -54,7 +52,6 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 
 	cmd := PrepareCmd(command, r.Body, stdout, os.Stderr)
 
-	// Run FFmpeg command
 	if err := cmd.Run(); err != nil {
 		http.Error(w, fmt.Sprintf("command failed: %v", err), http.StatusInternalServerError)
 	}
@@ -67,7 +64,7 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get the FFmpeg command from the form data
+	// Get the command from the form data
 	command := r.FormValue(FormDataKeyCommand)
 	if command == "" {
 		http.Error(w, "Missing command", http.StatusBadRequest)
@@ -84,15 +81,7 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 
 	cmd := PrepareCmd(command, file, w, os.Stderr)
 
-	// Run FFmpeg command
 	if err := cmd.Run(); err != nil {
 		http.Error(w, fmt.Sprintf("command failed: %v", err), http.StatusInternalServerError)
 	}
-}
-
-func WithCors(router *mux.Router) http.Handler {
-	return cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowCredentials: true,
-	}).Handler(router)
 }

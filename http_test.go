@@ -57,9 +57,28 @@ func TestHandleHTTP(t *testing.T) {
 		assert.Nil(t, os.Remove(outputPath))
 	})
 
-	t.Run("Pipe response back to client", func(t *testing.T) {
+	t.Run("Modify a local file", func(t *testing.T) {
 		outputPath := fmt.Sprintf("%s/output-B.flv", tmpDir)
-		command := fmt.Sprintf("ffmpeg -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv pipe:1", targetWidth, targetHeight)
+		command := fmt.Sprintf("ffmpeg -i %s -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", inputPath, targetWidth, targetHeight, outputPath)
+
+		req, err := http.NewRequest("POST", server.URL, nil)
+		assert.Nil(t, err)
+
+		req.Header.Set(HTTPHeaderCommand, command)
+
+		resp, err := client.Do(req)
+		assert.Nil(t, err)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		defer resp.Body.Close()
+
+		checkResolution(t, outputPath, targetHeight, targetWidth)
+
+		assert.Nil(t, os.Remove(outputPath))
+	})
+
+	t.Run("Pipe response back to client", func(t *testing.T) {
+		outputPath := fmt.Sprintf("%s/output-C.flv", tmpDir)
+		command := fmt.Sprintf("ffmpeg -i - -vf scale=%d:%d -c:a copy -c:v libx264 -f flv pipe:", targetWidth, targetHeight)
 
 		req.Header.Set(HTTPHeaderCommand, command)
 		req.Header.Set(HTTPHeaderAccept, ContentTypeApplicationOctetStream)
@@ -75,25 +94,6 @@ func TestHandleHTTP(t *testing.T) {
 		_, err = io.Copy(file, resp.Body)
 		assert.Nil(t, err)
 		file.Close()
-
-		checkResolution(t, outputPath, targetHeight, targetWidth)
-
-		assert.Nil(t, os.Remove(outputPath))
-	})
-
-	t.Run("Modify a local file", func(t *testing.T) {
-		outputPath := fmt.Sprintf("%s/output-C.flv", tmpDir)
-		command := fmt.Sprintf("ffmpeg -i %s -vf scale=%d:%d -c:a copy -c:v libx264 -f flv %s", inputPath, targetWidth, targetHeight, outputPath)
-
-		req, err := http.NewRequest("POST", server.URL, nil)
-		assert.Nil(t, err)
-
-		req.Header.Set(HTTPHeaderCommand, command)
-
-		resp, err := client.Do(req)
-		assert.Nil(t, err)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		defer resp.Body.Close()
 
 		checkResolution(t, outputPath, targetHeight, targetWidth)
 

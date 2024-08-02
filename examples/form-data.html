@@ -4,20 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FFmpeg Microservice - Form Data</title>
+    <title>FFmpeg Microservice - Send Input via Form Data</title>
 </head>
 
 <body>
     <h1>Upload Video and Command</h1>
     <form id="ffmpegForm" enctype="multipart/form-data" method="POST" action="http://localhost:3003?form-data=1">
         <div>
-            <label for="videoFile">Video File:</label>
-            <input type="file" id="videoFile" name="file" accept="video/*" required>
+            <label for="file">Select File:</label>
+            <input type="file" id="file" name="file" accept="video/*" required>
         </div>
         <div>
-            <label for="ffmpegCommand">FFmpeg Command:</label>
-            <input type="text" id="ffmpegCommand" name="command"
-                placeholder="e.g., -vf scale=100:50 -c:a copy -c:v libx264 -f flv -" required>
+            <label for="command">FFmpeg Command:</label>
+            <input type="text" id="command" name="command"
+                value="ffmpeg -i - -vf scale=100:50 -c:a copy -c:v libx264 -f flv ./output.flv" required>
         </div>
         <div>
             <button type="submit">Submit</button>

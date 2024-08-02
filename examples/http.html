@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFmpeg Microservice - Send Input via HTTP Post Request</title>
+</head>
+
+<body>
+    <h1>FFmpeg File Upload And Command</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="file">Select file:</label>
+        <input type="file" id="file" name="file"><br><br>
+
+        <label for="command">FFmpeg Command:</label>
+        <input type="text" id="command" name="command"
+            value="ffmpeg -i - -vf scale=100:50 -c:a copy -c:v libx264 -f flv pipe:" required><br><br>
+
+        <label for="octet-stream">Use "application/octet-stream" Accept Header?</label>
+        <input type="checkbox" id="octet-stream" name="octet-stream" checked="true"><br><br>
+
+        <button type="submit">Upload</button>
+    </form>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById("file");
+            const { value } = document.getElementById("command");
+            const { checked } = document.getElementById("octet-stream");
+
+            const file = fileInput.files[0];
+
+            const headers = {
+                "X-Command": value,
+            };
+            if (checked) {
+                headers["Accept"] = "application/octet-stream";
+            }
+            if (file?.type) {
+                headers["Content-Type"] = file.type;
+            }
+
+            fetch("http://localhost:3003", {
+                method: "POST",
+                body: file,
+                headers,
+            })
+                .then(res => res.blob())
+                .then(blob => {
+                    if (checked) {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.style.display = "none";
+                        a.href = url;
+                        a.download = "output.flv";
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    }
+                })
+                .catch(err => console.error("There has been a problem with your fetch operation:", err));
+        });
+    </script>
+</body>
+
+</html>
