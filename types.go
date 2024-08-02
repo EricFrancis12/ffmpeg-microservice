@@ -10,17 +10,22 @@ type FFprobeResult struct {
 	Streams  []Resolution `json:"streams"`
 }
 
-const ContentTypeApplicationOctetStream = "application/octet-stream"
+const ContentTypeApplicationOctetStream string = "application/octet-stream"
 
-const URLQueryParamFormData = "form-data"
+const URLQueryParamFormData string = "form-data"
 
 const (
-	HTTPHeaderAccept      = "Accept"
-	HTTPHeaderContentType = "Content-Type"
-	HTTPHeaderCommand     = "X-Command"
+	HTTPHeaderAccept      string = "Accept"
+	HTTPHeaderContentType string = "Content-Type"
+	HTTPHeaderCommand     string = "X-Command"
 )
 
 const (
-	FormDataKeyCommand        = "command"
+	FormDataKeyCommand string = "command"
 	FormDataKeyFile    string = "file"
+)
+
+const (
+	FlagNameHttpPort string = "hport"
+	FlagNameTcpPort  string = "tport"
 )

@@ -13,13 +13,9 @@ const (
 
 func main() {
 	var (
-		httpPort string
-		tcpPort  string
+		httpPort = stringVar(FlagNameHttpPort, defaultHttpPort, "Port the HTTP Server will run on")
+		tcpPort  = stringVar(FlagNameTcpPort, defaultTcpPort, "Port the TCP Server will run on")
 	)
-
-	flag.StringVar(&httpPort, "hport", defaultHttpPort, "Port the HTTP Server will run on")
-	flag.StringVar(&tcpPort, "tport", defaultTcpPort, "Port the TCP Server will run on")
-	flag.Parse()
 
 	httpServer := NewHTTPServer(httpPort)
 	go func() {
@@ -30,4 +26,11 @@ func main() {
 	tcpServer := NewTCPServer(tcpPort)
 	fmt.Println("TCP Server starting listening for connections on port " + tcpPort)
 	log.Fatal(tcpServer.Run())
+}
+
+func stringVar(name string, value string, usage string) string {
+	var result string
+	flag.StringVar(&result, name, value, usage)
+	flag.Parse()
+	return result
 }
