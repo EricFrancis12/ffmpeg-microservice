@@ -114,9 +114,16 @@ func clearDir(dirPath string) error {
 	for _, entry := range entries {
 		entryPath := filepath.Join(dirPath, entry.Name())
 		if entry.IsDir() {
-			return clearDir(entryPath)
+			err := clearDir(entryPath)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := os.Remove(entryPath)
+			if err != nil {
+				return err
+			}
 		}
-		return os.Remove(entryPath)
 	}
 
 	return nil
