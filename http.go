@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -22,9 +23,9 @@ func NewHTTPServer(listenAddr string) *HTTPServer {
 func (hs *HTTPServer) Run() error {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", handlePost).Methods("POST")
+	router.HandleFunc("/", handlePost).Methods("POST", "OPTIONS")
 
-	return http.ListenAndServe(hs.ListenAddr, router)
+	return http.ListenAndServe(hs.ListenAddr, withCORS(router))
 }
 
 func handlePost(w http.ResponseWriter, r *http.Request) {
@@ -84,4 +85,12 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 	if err := cmd.Run(); err != nil {
 		http.Error(w, fmt.Sprintf("command failed: %v", err), http.StatusInternalServerError)
 	}
+}
+
+func withCORS(handler http.Handler) http.Handler {
+	headersOk := handlers.AllowedHeaders([]string{HTTPHeaderAccept, HTTPHeaderCommand, HTTPHeaderContentType})
+	methodsOk := handlers.AllowedMethods([]string{"POST", "OPTIONS"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+
+	return handlers.CORS(originsOk, methodsOk, headersOk)(handler)
 }
