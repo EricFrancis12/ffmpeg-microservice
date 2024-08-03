@@ -1,14 +1,10 @@
 # FFmpeg Microservice
 
-The goal of this project was to create a microservice for FFmpeg whose input and output rely entirely on streaming, and does not hold any data in memory or write to the disc. This is to maintain functionality and scalability regardless of file size.
+FFmpeg Microservice is a scalable and efficient solution designed for processing video & audio files using FFmpeg. This microservice can input/output entirely via streaming - it does not need to store data in memory or on disk in order to function, ensuring robust performance with large files.
 
+It supports various input methods, including direct HTTP streaming, file system input, and multipart form data, and can stream output directly to the client.
 
 ## Quickstart
-
-### Prerequisites
-[Go](https://go.dev/doc/install)
-
-### Steps
 
 1. Clone the repository:
    
@@ -28,7 +24,7 @@ The goal of this project was to create a microservice for FFmpeg whose input and
    make build
    ```
 
-This will create a binary file located at  `/bin/ffmpeg-microservice`.
+   This will create a binary file located at  `/bin/ffmpeg-microservice`.
 
 4. Run the application:
    
@@ -36,16 +32,16 @@ This will create a binary file located at  `/bin/ffmpeg-microservice`.
    make run
    ```
 
-The service should now be running at http://localhost:3003 by default.
+   The service should now be running at http://localhost:3003 by default.
 
 
 ## Usage
 
-The service accepts input via an HTTP Post request, or as Multipart Form Data.
+The service accepts input via HTTP Post request, or as Multipart Form Data.
 
-### Input Type 1: HTTP
+### Input Type: HTTP
 
-#### Stream an input file in the HTTP request body
+#### Stream an input file via HTTP request body
 
 Use `-i -` if you are sending the input file in the request body:
 
@@ -69,7 +65,7 @@ curl -X POST \
    http://localhost:3003
 ```
 
-#### Stream the output back as the HTTP response
+#### Stream the output back as HTTP response
 
 Use the header `"Accept": "application/octet-stream"` and `pipe:` to stream stdout back to the client:
 
@@ -95,9 +91,9 @@ fetch("http://localhost:3003", {
 ```
 
 
-### Input Type 2: Form Data
+### Input Type: Form Data
 
-Make sure to use `?form-data=1` to indicate you are sending Form Data.
+Make sure to use `?form-data=1` to indicate you are sending multipart form data.
 The input file needs to have the name `file`.
 The command needs to have the name `command`.
 
@@ -127,7 +123,7 @@ The command needs to have the name `command`.
 ```
 
 
-### Input Type 3: TCP
+### Input Type: TCP
 Coming soon
 
 
