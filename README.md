@@ -39,9 +39,7 @@ It supports various input methods, including direct HTTP streaming, file system 
 
 The service accepts input via HTTP Post request, or as Multipart Form Data.
 
-### Input Type: HTTP
-
-#### Stream an input file via HTTP request body
+### Stream an input file via HTTP request body
 
 Use `-i -` if you are sending the input file in the request body:
 
@@ -55,7 +53,7 @@ curl -X POST \
    http://localhost:3003
 ```
 
-#### Use an input file from the file system
+### Use an input file from the file system
 
 Use `-i [path/to/file]` if you are referencing an input file in the file system:
 
@@ -65,7 +63,7 @@ curl -X POST \
    http://localhost:3003
 ```
 
-#### Stream the output back as HTTP response
+### Stream the output back as HTTP response
 
 Use the header `"Accept": "application/octet-stream"` and `pipe:` to stream stdout back to the client:
 
@@ -91,7 +89,7 @@ fetch("http://localhost:3003", {
 ```
 
 
-### Input Type: Form Data
+### Send Multipart Form Data as input
 
 Make sure to use `?form-data=1` to indicate you are sending multipart form data.
 The input file needs to have the name `file`.
@@ -121,10 +119,6 @@ The command needs to have the name `command`.
    </button>
 </form>
 ```
-
-
-### Input Type: TCP
-Coming soon
 
 
 ## Testing
