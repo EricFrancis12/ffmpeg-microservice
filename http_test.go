@@ -39,7 +39,7 @@ func TestHandleHTTP(t *testing.T) {
 	req, err := http.NewRequest("POST", server.URL, bytes.NewReader(inputFile))
 	assert.Nil(t, err)
 
-	req.Header.Set("Content-Type", "video/mkv")
+	req.Header.Set(HTTPHeaderContentType, ContentTypeVideoMKV)
 
 	t.Run("Write to file system", func(t *testing.T) {
 		outputPath := fmt.Sprintf("%s/output-A.flv", tmpDir)
