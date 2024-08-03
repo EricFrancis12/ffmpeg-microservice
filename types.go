@@ -10,7 +10,10 @@ type FFprobeResult struct {
 	Streams  []Resolution `json:"streams"`
 }
 
-const FlagNameHttpPort string = "hport"
+const (
+	FlagNameHttpPort       string = "hport"
+	FlagNameAllowedOrigins string = "ao"
+)
 
 const ContentTypeApplicationOctetStream string = "application/octet-stream"
 

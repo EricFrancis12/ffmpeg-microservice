@@ -11,12 +11,14 @@ import (
 )
 
 type HTTPServer struct {
-	ListenAddr string
+	ListenAddr     string
+	AllowedOrigins []string
 }
 
-func NewHTTPServer(listenAddr string) *HTTPServer {
+func NewHTTPServer(listenAddr string, allowedOrigins []string) *HTTPServer {
 	return &HTTPServer{
-		ListenAddr: listenAddr,
+		ListenAddr:     listenAddr,
+		AllowedOrigins: allowedOrigins,
 	}
 }
 
@@ -25,7 +27,7 @@ func (hs *HTTPServer) Run() error {
 
 	router.HandleFunc("/", handlePost).Methods("POST", "OPTIONS")
 
-	return http.ListenAndServe(hs.ListenAddr, withCORS(router))
+	return http.ListenAndServe(hs.ListenAddr, withCORS(router, hs.AllowedOrigins))
 }
 
 func handlePost(w http.ResponseWriter, r *http.Request) {
@@ -87,10 +89,10 @@ func handleFormData(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func withCORS(handler http.Handler) http.Handler {
+func withCORS(handler http.Handler, allowedOrigins []string) http.Handler {
 	headersOk := handlers.AllowedHeaders([]string{HTTPHeaderAccept, HTTPHeaderCommand, HTTPHeaderContentType})
 	methodsOk := handlers.AllowedMethods([]string{"POST", "OPTIONS"})
-	originsOk := handlers.AllowedOrigins([]string{"*"})
+	originsOk := handlers.AllowedOrigins(allowedOrigins)
 
 	return handlers.CORS(originsOk, methodsOk, headersOk)(handler)
 }

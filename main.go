@@ -4,21 +4,52 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 )
 
-const defaultHttpPort = ":3003"
+const (
+	defaultHttpPort       = ":3003"
+	defaultAllowedOrigins = "*"
+)
 
 func main() {
-	httpPort := stringVar(FlagNameHttpPort, defaultHttpPort, "Port the HTTP Server will run on")
+	hport := stringFlag(FlagNameHttpPort, defaultHttpPort, "Port the HTTP Server will run on")
+	ao := stringsFlag(FlagNameAllowedOrigins, "CORS allowed origins")
+	flag.Parse()
 
-	httpServer := NewHTTPServer(httpPort)
-	fmt.Println("HTTP Server starting on port " + httpPort)
+	var (
+		httpPort       = *hport
+		allowedOrigins = []string(*ao)
+	)
+
+	if len(allowedOrigins) == 0 {
+		allowedOrigins = []string{defaultAllowedOrigins}
+	}
+
+	httpServer := NewHTTPServer(httpPort, allowedOrigins)
+	fmt.Printf("HTTP Server starting on port %s", httpPort)
 	log.Fatal(httpServer.Run())
 }
 
-func stringVar(name string, value string, usage string) string {
+type flagsSlice []string
+
+func (i flagsSlice) String() string {
+	return strings.Join([]string(i), ", ")
+}
+
+func (i *flagsSlice) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
+func stringsFlag(name string, usage string) *flagsSlice {
+	var result flagsSlice
+	flag.Var(&result, name, usage)
+	return &result
+}
+
+func stringFlag(name string, defaultValue string, usage string) *string {
 	var result string
-	flag.StringVar(&result, name, value, usage)
-	flag.Parse()
-	return result
+	flag.StringVar(&result, name, defaultValue, usage)
+	return &result
 }
