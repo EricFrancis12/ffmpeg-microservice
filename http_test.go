@@ -119,6 +119,7 @@ func TestHandleFormData(t *testing.T) {
 
 		file, err := os.Open(inputPath)
 		assert.Nil(t, err)
+		defer file.Close()
 
 		// Prepare the reader instances to encode
 		fdm := make(FormDataMap)
